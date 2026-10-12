@@ -5,8 +5,8 @@
 ## 🌐 Live Demo (Hugging Face Spaces)
 
 👉 **Run CoDy in your browser:**  
-(https://huggingface.co/spaces/AdolfoJCJ/CoDy)
-<img width="1448" height="1086" alt="TIE–Dialog interface" src="https://github.com/user-attachments/assets/78915c18-727d-424e-9289-f2c255cb201b" />
+[https://huggingface.co/spaces/AdolfoJCJ/CoDy](https://huggingface.co/spaces/AdolfoJCJ/CoDy)
+<img width="1448" height="1086" alt="CoDy interface" src="https://github.com/user-attachments/assets/78915c18-727d-424e-9289-f2c255cb201b" />
 
 ---
 
@@ -49,9 +49,10 @@ where:
 
 # 🚀 Quickstart
 
-bash
+```bash
 pip install -r requirements.txt
 streamlit run app.py
+```
 
 
 The app provides two main usage styles:
@@ -67,12 +68,13 @@ CoDy accepts `.csv` or `.xlsx` dialogue files.
 
 ## Required columns
 
-
-turn-participant-text
+- `turn`
+- `participant`
+- `text`
 
 ## Optional column
 
-timestamp
+- `timestamp`
 
 If `turn` is missing, the app can generate turn indices automatically.
 
@@ -208,7 +210,7 @@ $$
 \Pi(G_t)
 $$
 
-TIE–Dialog compares consecutive graph summaries and converts their distance into:
+CoDy compares consecutive graph summaries and converts their distance into:
 
 $$
 C_{\mathrm{inv}}(t)
@@ -268,7 +270,7 @@ $$
 
 Let $E_t$ and $E_{t-1}$ be unit-normalized consecutive turn embeddings.
 
-TIE–Dialog computes:
+CoDy computes:
 
 $$
 d_t =\frac{\arccos\left(\frac{E_t\cdot E_{t-1}}{\|E_t\|\|E_{t-1}\|}\right)}{\pi}
@@ -366,7 +368,7 @@ $$
 
 The five coordinates are intentionally **not collapsed into a single transition score**.
 
-This allows TIE–Dialog to test whether conversational transitions are associated with:
+This allows CoDy to test whether conversational transitions are associated with:
 
 * one coordinate,
 * several coordinates acting together,
@@ -443,6 +445,34 @@ Equal numerical scaling does not establish that all five coordinates have equal 
 
 ---
 
+# 🔷 Raw Informational Velocity and Informational Time
+
+For turns where the complete five-dimensional state is available, CoDy also represents the raw path length through state space.
+
+The one-turn raw informational velocity is:
+
+$$
+v_{\mathrm{info},t}=\|\mathbf{z}_t-\mathbf{z}_{t-1}\|_2
+$$
+
+Because $J_t$ is the same Euclidean step divided by $\sqrt{5}$:
+
+$$
+v_{\mathrm{info},t}=\sqrt{5}\,J_t
+$$
+
+Informational time is the cumulative raw path length:
+
+$$
+\tau_{\mathrm{info}}(t)=\sum_{s}v_{\mathrm{info},s}
+$$
+
+The cumulative clock starts at $0$ on the first turn for which all five coordinates are finite. Missing structural values during the initial $C_{\mathrm{inv}}$ warm-up are not imputed, and later gaps are not silently bridged.
+
+These quantities are **descriptive state-space summaries**. They are not chronological time, transition probabilities, or validated psychological measures.
+
+---
+
 # 🔷 Variability-Adjusted Multivariate Movement — $v_{\mathrm{rel},t}$
 
 Raw first differences can have substantially different empirical variability across coordinates.
@@ -469,7 +499,7 @@ $$
 r_{u,t}=\frac{\Delta u_t}{s_u}
 $$
 
-where $s_j$ denotes the corresponding robust variability estimate.
+where $s_j$ denotes the corresponding robust variability estimate. In the current implementation, the primary estimate is $1.4826\times\mathrm{MAD}$ of that coordinate's valid first differences, calibrated on the common set of fully observed five-dimensional steps. If the MAD collapses numerically, CoDy falls back to RMS about zero; a completely flat coordinate receives scale $1$, leaving its standardized changes at zero. This calibration uses the full dialogue and is therefore retrospective.
 
 The variability-adjusted movement vector is:
 
@@ -526,13 +556,17 @@ $$
 \sum_jp_{j,t}=1
 $$
 
+The composition is defined only for valid, non-zero variability-adjusted movement. Turns for which the complete five-dimensional step is unavailable, or for which the adjusted movement is effectively zero, remain undefined rather than receiving an arbitrary composition.
+
 Whereas $v_{\mathrm{rel},t}$ describes **movement magnitude**, $\mathbf{p}_t$ describes **movement composition**.
 
 Two turns can therefore have similar values of $v_{\mathrm{rel},t}$ while exhibiting very different internal distributions of change across the five coordinates.
 
+In the current Streamlit interface, these quantities can be inspected directly at turn level. Hovering over a turn in the main trajectory displays the utterance, $v_{\mathrm{rel},t}$, $CR_t$, the relative contribution of each primary coordinate, and the direction of each component change.
+
 ---
 
-# 🔷 Compositional Reorganization — $TV_t$ and $JSD_t$
+# 🔷 Compositional Reorganization — $CR_t$ / $TV_t$ and $JSD_t$
 
 The current Research Tutorial distinguishes between:
 
@@ -546,18 +580,20 @@ $$
 \text{organization of multivariate change}
 $$
 
-Consecutive movement compositions are compared using Total Variation and Jensen–Shannon Divergence.
+Consecutive movement compositions are compared using Total Variation and Jensen–Shannon Divergence. In the Streamlit application, Total Variation is exposed as **Contribution Reconfiguration**, `CR_t`. Thus, in the current implementation, $CR_t$ and $TV_t$ refer to the same quantity.
 
-## Total Variation
+## Contribution Reconfiguration / Total Variation
 
 $$
-TV_t=\frac{1}{2}\sum_j\left|p_{j,t}-p_{j,t-1}\right|
+CR_t = TV_t = \frac{1}{2}\sum_j\left|p_{j,t}-p_{j,t-1}\right|
 $$
 
 Interpretation:
 
-* **low $TV_t$** → the relative contribution of the five coordinates remains similar
-* **high $TV_t$** → the composition of multivariate movement changes strongly
+* **low $CR_t$ / $TV_t$** → the relative contribution of the five coordinates remains similar
+* **high $CR_t$ / $TV_t$** → the composition of multivariate movement changes strongly
+
+$CR_t$ is defined only when both consecutive composition vectors are finite. It is bounded to $[0,1]$.
 
 ## Jensen–Shannon Divergence
 
@@ -565,16 +601,16 @@ $$
 JSD_t=JSD\left(\mathbf{p}_{t-1},\mathbf{p}_t\right)
 $$
 
-Using base-$2$ logarithms, Jensen–Shannon Divergence is symmetric and bounded.
+Using base-$2$ logarithms, Jensen–Shannon Divergence is symmetric and bounded to $[0,1]$.
 
-Both $TV_t$ and $JSD_t$ describe **reorganization of the relative movement composition**.
+Both $CR_t$ / $TV_t$ and $JSD_t$ describe **reorganization of the relative movement composition**.
 
 They are distinct from total movement magnitude.
 
 It is therefore possible to observe:
 
 $$
-TV_t\uparrow,\qquadJSD_t\uparrow
+CR_t(=TV_t)\uparrow,\qquad JSD_t\uparrow
 $$
 
 without a comparably large increase in:
@@ -609,7 +645,7 @@ Agreement across the $L1$ and $L2$ definitions should be interpreted as **robust
 
 # 🔷 Direction of Multivariate Movement
 
-For every valid non-zero raw step, Cody can compute the unit movement direction:
+For every valid non-zero raw step, CoDy can compute the unit movement direction:
 
 $$
 \widehat{\Delta\mathbf{z}}_t=\frac{\Delta\mathbf{z}_t}{\|\Delta\mathbf{z}_t\|_2}
@@ -900,6 +936,8 @@ Turn-level results can include:
 * `dkappa_t`
 * `du_t`
 * `J_t`
+* `v_info_t`
+* `tau_info_t`
 * `J_share_S`
 * `J_share_R`
 * `J_share_d`
@@ -911,26 +949,32 @@ Turn-level results can include:
 * `Vrel_share_d`
 * `Vrel_share_kappa`
 * `Vrel_share_u`
-* movement-direction components
+* `CR_t`
+* `dir_S`
+* `dir_R`
+* `dir_d`
+* `dir_kappa`
+* `dir_u`
 * rolling pairwise correlations
 * `Q_t`
-* lead–lag summaries
-* `p_max_over_lags`
-* `p_holm`
 * IC–II auxiliary signals
 * participant trajectories
 * operational event labels
 * `D_t_exploratory`
 * and additional diagnostics where enabled
 
-The current Research Tutorial additionally derives:
+The Streamlit application exposes `CR_t`, which is mathematically identical to Total Variation (`TV_t`) between consecutive variability-adjusted movement-composition vectors.
 
-* `TV_t`
+The current Research Tutorial additionally derives complementary analysis-level quantities including:
+
+* `TV_t` (equivalent to app-level `CR_t`)
 * `JSD_t`
+* compositional entropy
+* maximum component share
 
-from the variability-adjusted movement composition.
+`JSD_t`, entropy, and maximum-share statistics are analysis-level derived variables rather than canonical app outputs unless explicitly added to a future interface version.
 
-If these quantities are not generated directly by the Streamlit application, they should be understood as **analysis-level derived variables rather than canonical app outputs**.
+The main trajectory hover also exposes turn text, participant identity, $C_t$, $v_{\mathrm{rel},t}$, $CR_t$, relative component shares, and component-change directions for rapid turn-level inspection.
 
 The app also provides downloadable CSV outputs, HTML plots, and PDF reports.
 
@@ -969,10 +1013,10 @@ $$
 \mathbf{p}_t=\left(p_{S,t},p_{R,t},p_{d,t},p_{\kappa,t},p_{u,t}\right)
 $$
 
-Reorganization between consecutive turns is quantified primarily through:
+Reorganization between consecutive turns is quantified primarily through Contribution Reconfiguration / Total Variation:
 
 $$
-TV_t=\frac{1}{2}\sum_j\left|p_{j,t}-p_{j,t-1}\right|
+CR_t = TV_t = \frac{1}{2}\sum_j\left|p_{j,t}-p_{j,t-1}\right|
 $$
 
 and:
@@ -984,7 +1028,7 @@ $$
 The corresponding exploratory prediction is:
 
 $$
-TV(t_0)>\text{temporally matched null expectation}
+CR(t_0)=TV(t_0)>\text{temporally matched null expectation}
 $$
 
 and:
@@ -1042,7 +1086,7 @@ In the current $12$-dialogue discovery dataset, the primary $\pm3$ criterion ide
 Using dialogue-wise circular-shift null alignments, the current exploratory pattern is:
 
 $$
-TV(t_0)\approx20.5\%\text{ above null expectation}
+CR(t_0)=TV(t_0)\approx20.5\%\text{ above null expectation}
 $$
 
 and:
@@ -1071,7 +1115,7 @@ A conversational boundary may coincide with a strong redistribution of multivari
 
 ## Temporal Localization
 
-In the subset of events with complete data from $t_0-2$ through $t_0+2$, both $TV_t$ and $JSD_t$ show a localized maximum around $t_0$.
+In the subset of events with complete data from $t_0-2$ through $t_0+2$, both $CR_t$ / $TV_t$ and $JSD_t$ show a localized maximum around $t_0$.
 
 The same temporal concentration is not comparably clear for $v_{\mathrm{rel},t}$.
 
@@ -1087,6 +1131,11 @@ Under the original primary analysis, positive dialogue-level effects are observe
 
 $$
 10/12
+$$
+
+dialogues. This indicates that the exploratory effect is not driven solely by one conversation, although cross-dialogue consistency within the discovery sample is not an independent replication.
+
+---
 
 ## Exploratory Mechanism
 
@@ -1132,7 +1181,7 @@ around the human-consensus boundary.
 
 In other words, the boundary-aligned effect appears to involve **reduced dominance of a single movement component and greater distribution across dimensions**, rather than a fixed transfer toward one specific coordinate.
 
-Because entropy, maximum share, $TV_t$, and $JSD_t$ are mathematically related summaries of the same composition, these results should be interpreted as **mechanistic characterization of one phenomenon**, not as independent confirmations.
+Because entropy, maximum share, $CR_t$ / $TV_t$, and $JSD_t$ are mathematically related summaries of the same composition, these results should be interpreted as **mechanistic characterization of one phenomenon**, not as independent confirmations.
 
 ---
 
@@ -1229,7 +1278,7 @@ The same discovery dataset contributed to the development of the hypothesis itse
 Therefore:
 
 * within-sample robustness is not independent confirmation,
-* $TV_t$, $JSD_t$, entropy, and dominant-share analyses are mathematically related through the same movement composition,
+* $CR_t$ / $TV_t$, $JSD_t$, entropy, and dominant-share analyses are mathematically related through the same movement composition,
 * robustness to one alternative composition rule does not establish representation independence,
 * external semantic baselines do not exhaust possible simpler explanations,
 * scalar reconstruction diagnostics rule out only the tested model class,
@@ -1283,15 +1332,13 @@ The current computational progression is:
 
 utterances
 → embeddings
-→ contextual continuity C_t
-→ structural persistence C_inv
-→ geometric observables d_t, κ_t, ρ_t
-→ primary state z_t = (S_t, R_t, d_t, κ_t, u_t)
-→ component-wise first differences
-→ variability-adjusted multivariate movement
-→ movement composition p_t
-→ compositional reorganization
-→ external human validation
+→ contextual, structural, and geometric observables
+→ primary state $\mathbf{z}_t=(S_t,R_t,d_t,\kappa_t,u_t)$
+→ component-wise first differences $\Delta\mathbf{z}_t$
+→ movement magnitude $v_{\mathrm{rel},t}$
+→ movement composition $\mathbf{p}_t$
+→ contribution reconfiguration $CR_t$ / $TV_t$
+→ comparison with external human-consensus annotations
 
 
 A key methodological principle is:
@@ -1318,14 +1365,13 @@ Current limitations include:
 * By contrast, the current $d_t$, $\kappa_t$, and $u_t$ implementations are temporally causal.
 * $C_{\mathrm{inv}}$ cannot be estimated until sufficient rolling structural context is available.
 * The five coordinates may have different intrinsic temporal response functions.
-* Apparent lead–lag structure may therefore partly reflect measurement architecture and should be checked with synthetic latency calibration.
 * Rolling correlations can be unstable in short windows.
-* Correlation and lead–lag do not establish causal interaction.
+* Correlation among dimensions does not establish causal interaction.
 * $J_t$ is a descriptive state-movement magnitude, not evidence that the five coordinates form one latent variable.
 * $v_{\mathrm{rel},t}$ is a variability-adjusted movement descriptor, not a transition probability.
 * $\mathbf{p}_t$ is a relative composition and therefore describes contribution shares rather than absolute component strength.
 * Because compositional shares sum to $1$, changes in one component's relative contribution necessarily affect the relative contributions of the others.
-* $TV_t$, $JSD_t$, entropy, and maximum-share statistics are related summaries of the same underlying composition and should not be interpreted as independent confirmations.
+* $CR_t$ / $TV_t$, $JSD_t$, entropy, and maximum-share statistics are related summaries of the same underlying composition and should not be interpreted as independent confirmations.
 * $Q_t$ is a second-order exploratory descriptor.
 * The exploratory $D_t$ summary is not a validated geometry construct.
 * Event labels depend on operational rules and thresholds and are retained as secondary diagnostics.
