@@ -727,7 +727,8 @@ The ten pairwise rolling correlations define the off-diagonal structure of a loc
 CoDy measures how much this dependency structure changes between adjacent turns using a normalized Frobenius-distance formulation:
 
 $$
-Q_t=\frac{\sqrt{2\sum_{i<j}\left[r_{ij}(t)-r_{ij}(t-1)\right]^2}}{\sqrt{80}}
+Q_t =
+\frac{\sqrt{2\sum_{i<j}(r_{ij}(t)-r_{ij}(t-1))^2}}{\sqrt{80}}
 $$
 
 The denominator $\sqrt{80}$ provides a fixed theoretical normalization based on the element-wise range of the ten unique pairwise correlations.
