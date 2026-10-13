@@ -30,7 +30,7 @@ $$
 where:
 
 - **$S_t$** — contextual discontinuity
-- **$R_t$** — structural instability / low persistence
+- **$R_t$** — structural reconfiguration / low persistence
 - **$d_t$** — local angular displacement in embedding space
 - **$\kappa_t$** — turning-angle curvature of the embedding trajectory
 - **$u_t$** — local semantic dispersion
