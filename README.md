@@ -5,8 +5,8 @@
 ## 🌐 Live Demo (Hugging Face Spaces)
 
 👉 **Run CoDy in your browser:**  
-[https://huggingface.co/spaces/AdolfoJCJ/CoDy](https://huggingface.co/spaces/AdolfoJCJ/CoDy)
-<img width="1448" height="1086" alt="CoDy interface" src="https://github.com/user-attachments/assets/78915c18-727d-424e-9289-f2c255cb201b" />
+<img width="1448" height="1086" alt="Four-Panel Continuity Analytics Dashboard" src="https://github.com/user-attachments/assets/b951cdcd-70b3-4ab6-9d7d-074826e8c1e8" />
+
 
 ---
 
