@@ -95,12 +95,12 @@ The current framework combines contextual, structural, and geometric description
 | Component | Main role |
 | --- | --- |
 | **Embeddings** | Represent each turn in a semantic vector space |
-| **IC–II / $C_t$** | Estimate contextual continuity over time |
+| **$C_t$** | Estimate contextual continuity over time |
 | **$C_{\mathrm{inv}}$** | Estimate persistence of rolling graph organization |
 | **$S_t$** | Contextual discontinuity: $1-C_t$ |
 | **$R_t$** | Structural instability: $1-C_{\mathrm{inv}}$ |
-| **IC–III / $d_t$** | Local angular displacement |
-| **IC–III / $\kappa_t$** | Turning-angle curvature |
+| **$d_t$** | Local angular displacement |
+| **$\kappa_t$** | Turning-angle curvature |
 | **$u_t$** | Local semantic dispersion: $1-\rho_t$ |
 | **First differences** | Directional turn-to-turn change in each coordinate |
 | **$J_t$** | Raw normalized magnitude of complete-state movement |
@@ -133,7 +133,7 @@ All downstream embedding-derived observables should be interpreted relative to t
 
 ---
 
-# 🔹 IC–II — Contextual Continuity
+# 🔹 Contextual Continuity
 
 ## $C_t$ — contextual continuity
 
@@ -253,7 +253,7 @@ $$
 
 ---
 
-# 🔹 IC–III — Geometric Conversational Dynamics
+# 🔹 Geometric Conversational Dynamics
 
 The IC–III layer treats the sequence of turn embeddings as a trajectory through representation space.
 
