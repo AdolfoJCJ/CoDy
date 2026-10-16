@@ -480,7 +480,7 @@ where $s_j$ is the corresponding robust change scale.
 The primary estimate is:
 
 $$
-s_j = 1.4826\times\operatorname{MAD}(\Delta z_j)
+s_j = 1.4826\times\mathrm{MAD}(\Delta z_j)
 $$
 
 computed on the common set of fully observed five-dimensional steps.
@@ -662,7 +662,7 @@ The ten pairwise rolling correlations define the off-diagonal structure of a loc
 CoDy measures how much this dependency structure changes between adjacent turns using:
 
 $$
-Q_t=\frac{\sqrt{2\sum_{i<j}\left(r_{ij}(t)-r_{ij}(t-1)\right)^2}}{\sqrt{80}}
+Q_t=\frac{\sqrt{2\sum_{i \lt j}\left(r_{ij}(t)-r_{ij}(t-1)\right)^2}}{\sqrt{80}}
 $$
 
 Interpretation:
