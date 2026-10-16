@@ -29,7 +29,7 @@ where:
 - **$\kappa_t$** — turning-angle curvature of the embedding trajectory
 - **$u_t$** — local semantic dispersion
 
-The five coordinates are deliberately retained as separate observables. The current framework does **not** use a Geometry Driver, event classifier, transition-pressure score, or informational-time variable in its primary implementation.
+The five coordinates are deliberately retained as separate observables. The current framework does **not** use a Geometry Driver, event classifier, transition-pressure score, informational-time variable, or internal robustness-testing layer in its primary application.
 
 CoDy currently analyzes:
 
@@ -40,7 +40,6 @@ CoDy currently analyzes:
 - the relative contribution of each coordinate to movement,
 - compositional reorganization of movement,
 - time-varying coupling among component changes,
-- changes in the full rolling dependency structure,
 - contextual and structural continuity,
 - and participant-specific coherence trajectories.
 
@@ -109,7 +108,6 @@ The current framework combines contextual, structural, and geometric description
 | **Relative shares** | Distribution of adjusted movement across the five coordinates |
 | **$CR_t$** | Reorganization of the relative movement composition |
 | **Dynamic coupling** | Rolling correlations among component changes |
-| **$Q_t$** | Change in the complete rolling dependency structure |
 | **$C_i$** | Participant-specific coherence trajectories |
 
 The central methodological choice is to keep the primary coordinates separate rather than assuming in advance that they belong in one scalar transition variable.
@@ -122,15 +120,14 @@ Each conversational turn is first mapped to a semantic representation.
 
 The current interface supports:
 
-- **MiniLM / SBERT**
-- **E5**
-- **BGE**
-- **INSTRUCTOR**
+- **MiniLM / SBERT** as the canonical embedding representation
 - **TF-IDF** as an explicit baseline representation
 
 The canonical MiniLM pathway uses `sentence-transformers/all-MiniLM-L6-v2` through Hugging Face Transformers with mean pooling and L2 normalization.
 
-Alternative embedding backends can be selected in Explore mode. The application does not silently switch to another representation if the requested backend fails.
+The application does not depend on the `sentence-transformers` Python package for the canonical MiniLM pathway.
+
+In Explore mode, a compatible Hugging Face transformer model name can be provided manually. The application does not silently switch to another representation if the requested backend fails.
 
 All downstream embedding-derived observables should be interpreted relative to the chosen representation model.
 
@@ -381,8 +378,7 @@ This allows CoDy to inspect whether conversational change is associated with:
 - characteristic dissociations,
 - recurrent temporal sequences,
 - redistribution of relative movement contributions,
-- changes in coupling among dimensions,
-- or changes in the broader multivariate dependency structure.
+- or changes in coupling among dimensions.
 
 The framework therefore does not assume that all dimensions should rise together.
 
@@ -655,27 +651,6 @@ The rolling dependency window is configurable in Explore mode.
 
 ---
 
-# 🔷 Dependency-Structure Reorganization — $Q_t$
-
-The ten pairwise rolling correlations define the off-diagonal structure of a local $5\times5$ correlation matrix.
-
-CoDy measures how much this dependency structure changes between adjacent turns using:
-
-$$
-Q_t=\frac{\sqrt{2\sum_{i \lt j}\left(r_{ij}(t)-r_{ij}(t-1)\right)^2}}{\sqrt{80}}
-$$
-
-Interpretation:
-
-- **$Q_t\approx0$** → little change in the local dependency structure
-- **larger $Q_t$** → stronger reorganization of relationships among the five coordinates
-
-$Q_t$ is a **second-order exploratory descriptor**.
-
-It is available as an optional plot inside the Dynamic Coupling view and should not be interpreted as a primary transition metric or event probability.
-
----
-
 # 🔹 Participant-Specific Coherence — $C_i$
 
 CoDy computes participant-specific coherence trajectories.
@@ -708,9 +683,10 @@ The current sidebar is organized into four tabs:
 ## Core
 
 - select the semantic representation,
+- use MiniLM/SBERT or TF-IDF,
 - choose the smoothing method,
 - configure EMA / EWMA parameters in Explore mode,
-- optionally provide a custom model name.
+- optionally provide a compatible Hugging Face model name for the transformer pathway.
 
 ## Structure
 
@@ -726,7 +702,7 @@ The current sidebar is organized into four tabs:
 - choose whether to overlay $C_{\mathrm{inv}}$ on the main trajectory,
 - configure the rolling dependency window for multicomponent coupling.
 
-The application no longer includes an internal robustness-testing tab, event-classification tab, Geometry Driver, or informational-time view. Those forms of validation are better treated as external analysis workflows when required.
+The application no longer includes an internal robustness-testing tab, event-classification layer, Geometry Driver, informational-time view, or dependency-structure diagnostic.
 
 ---
 
@@ -801,16 +777,6 @@ together with turn-level hover information.
 
 Displays selected trailing pairwise correlations among component changes.
 
-## Optional dependency-structure diagnostic
-
-Displays:
-
-$$
-Q_t
-$$
-
-when enabled.
-
 ---
 
 # 📤 Outputs
@@ -848,7 +814,6 @@ The full turn-level output can include:
 - component direction variables
 - rolling pairwise state correlations
 - rolling pairwise change correlations
-- `Q_t`
 
 The application also provides:
 
@@ -940,7 +905,7 @@ utterances
 → variability-adjusted movement v_rel,t
 → movement composition p_t
 → contribution reconfiguration CR_t
-→ dynamic coupling and Q_t
+→ dynamic coupling
 → external empirical validation
 ```
 
@@ -975,7 +940,6 @@ Current limitations include:
 - $CR_t$ measures compositional redistribution, not absolute movement magnitude.
 - Rolling correlations can be unstable in short windows.
 - Correlation among dimensions does not establish causal interaction.
-- $Q_t$ is a second-order exploratory descriptor.
 - Participant trajectories are computational summaries rather than validated psychological measurements.
 - Agreement between computational patterns and human judgments must be established externally.
 - Robustness across embeddings, parameter settings, datasets, annotation schemes, or null models should be evaluated outside the main application when required.
