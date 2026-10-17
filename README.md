@@ -144,7 +144,7 @@ At each turn, the current utterance embedding is evaluated relative to an evolvi
 - longer-term conversational memory,
 - and recent local context.
 
-The current IC–II implementation combines:
+The current implementation combines:
 
 - semantic resonance,
 - local displacement,
@@ -255,7 +255,7 @@ $$
 
 # 🔹 Geometric Conversational Dynamics
 
-The IC–III layer treats the sequence of turn embeddings as a trajectory through representation space.
+The Geometric layer treats the sequence of turn embeddings as a trajectory through representation space.
 
 The current geometric observables are kept separate:
 
@@ -818,8 +818,8 @@ The full turn-level output can include:
 The application also provides:
 
 - full results as CSV,
-- IC–II dynamics as CSV,
-- IC–III geometry as CSV,
+- Representational dynamics as CSV,
+- Representational geometry as CSV,
 - the main Plotly trajectory as HTML,
 - and a downloadable PDF report.
 
