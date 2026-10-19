@@ -29,7 +29,7 @@ where:
 - **$\kappa_t$** — turning-angle curvature of the embedding trajectory
 - **$u_t$** — local semantic dispersion
 
-The five coordinates are deliberately retained as separate observables. The current framework does **not** use a Geometry Driver, event classifier, transition-pressure score, informational-time variable, or internal robustness-testing layer in its primary application.
+The five coordinates are deliberately retained as separate observables.
 
 CoDy currently analyzes:
 
